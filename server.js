@@ -1,14 +1,12 @@
+'use strict'
 
 const express = require('express')
+const server = express()
 const data = require('./Movie Data/data.json')
 
-
-const server = express()
-
-const PORT = 3003;
+const PORT = 3000;
 
 server.listen(PORT , ()=> {
-
     console.log(`Listening on ${PORT}`)
 })
 
@@ -21,37 +19,40 @@ server.listen(PORT , ()=> {
 // Create a constructor function to ensure your data follow the same format.
 
 server.get('/', (req,res) =>{
-
-const movie = new Movie(data.title, data.poster_path, data.overview);
-
-
-res.send(JSON.stringify({
-    title: movie.title,
-    poster_path: movie.poster_path,
-    overview: movie.overview
-  }));
+let movie = new Movie(data.title, data.poster_path, data.overview);
+res.send(JSON.stringify({movie}));
 })
 
 
   
-// function Movie(title, poster_path, overview) {
-//     this.title = title;
-//     this.poster_path = poster_path;
-//     this.overview = overview;
-//   }
+function Movie(title, poster_path, overview) {
+    this.title = title;
+    this.poster_path = poster_path;
+    this.overview = overview;
+  }
 
 
   server.get('/favorite', (req,res) =>{
-
     res.send('Welcome to Favorite Page')
-    
     })
+
+    server.get('/trending', trendingHandler)
+    server.get('/search/:query', searchingHandler)
+    server.get('/movie/:id', getByID)
+    server.get('/movie/:id/credits', getMovieCridets)
 
 
 //     Handle errors
 // Create a function to handle the server error (status 500)
 // Create a function to handle "page not found error" (status 404)
 
+
+
+
+//404 should be before 500
+server.get('*', (req,res) =>{
+  res.status(404).send('Sorry, page not found')
+})
 
 server.get('*', (req,res) =>{
 
@@ -64,11 +65,8 @@ server.get('*', (req,res) =>{
 
 
 
-    server.get('*', (req,res) =>{
-
-        res.status(400).send('Sorry, page not found')
+    
         
-        })
 
 
 
@@ -78,16 +76,14 @@ server.get('*', (req,res) =>{
         const cors = require('cors')
         server.use(cors())
         const axios = require('axios');
-        server.get('/trending', trendingHandler)
-        server.get('/search/:query', searchingHandler)
-        server.get('/movie/:id', getByID)
-        server.get('/movie/:id/credits', getMovieCridets)
-
-        server.use(errorHandler)
         require('dotenv').config();
         const apiKey = process.env.APIkey;
        
+       
 
+        server.use(errorHandler)
+      
+     
         
 
 
@@ -100,7 +96,7 @@ server.get('*', (req,res) =>{
         
           let mapResult = result.data.results.map( item =>{
 
-            let singleMovie = new Movie(item.id,item.title, item.release_date, item.poster_path, item.overview)
+            let singleMovie = new MovieApi(item.id,item.title, item.release_date, item.poster_path, item.overview)
             return singleMovie
           })
           res.send(mapResult)
@@ -130,7 +126,7 @@ server.get('*', (req,res) =>{
           
             let mapResult = result.data.results.map( item =>{
   
-              let singleMovie = new Movie(item.id,item.title, item.release_date, item.poster_path, item.overview)
+              let singleMovie = new MovieApi(item.id,item.title, item.release_date, item.poster_path, item.overview)
               return singleMovie
             })
             res.send(mapResult)
@@ -149,18 +145,15 @@ server.get('*', (req,res) =>{
 
 
         function getByID(req, res){
-          const movieID= req.params.movieID;
-          const url=`https://api.themoviedb.org/3/movie/${movieID}?api_key=${APIKey}`
+          const movieID= req.params.id;
+          const url=`https://api.themoviedb.org/3/movie/${movieID}?api_key=${apiKey}`
           try{
           axios.get(url)
           .then(result=>{
           
-            let mapResult = result.data.results.map( item =>{
-  
-              let singleMovie = new Movie(item.id,item.title, item.release_date, item.poster_path, item.overview)
-              return singleMovie
-            })
-            res.send(mapResult)
+            let singleMovie = new MovieApi(result.data.id,result.data.title, result.data.release_date, result.data.poster_path, result.data.overview)
+             
+            res.send(singleMovie)
      
           }).catch((error)=> {
             console.log('something went wrong', error)
@@ -176,8 +169,8 @@ server.get('*', (req,res) =>{
 
 
 function getMovieCridets(req, res){
-  const movieID= req.params.movieID;
-  const url=`https://api.themoviedb.org/3/movie/${movieID}/credits?api_key=${APIKey}`
+  const movieID= req.params.id;
+  const url=`https://api.themoviedb.org/3/movie/${movieID}/credits?api_key=${apiKey}`
   try{
   axios.get(url)
   .then(result=>{
@@ -201,7 +194,7 @@ function getMovieCridets(req, res){
 
 
 
-        function Movie(id,title, release_date, poster_path,overview) {
+        function MovieApi(id,title, release_date, poster_path,overview) {
           this.id=id;
           this.title = title;
           this.release_date=release_date
