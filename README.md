@@ -32,3 +32,5 @@
 
 
 - The app has an error handling route for status 500 and 404
+
+- The app is connected to database
