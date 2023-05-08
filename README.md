@@ -34,3 +34,10 @@
 - The app has an error handling route for status 500 and 404
 
 - The app is connected to database
+
+- we added three methods for update, delete, and get movie:
+
+Endpoint for updateMovieHandler: /UPDATE/{id}
+Endpoint for deleteMovieHandler: /DELETE/{id}
+Endpoint for getMovieHandler: /getMovie?id={id}
+
