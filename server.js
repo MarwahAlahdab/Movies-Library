@@ -7,7 +7,7 @@ const cors = require("cors");
 const axios = require("axios");
 require("dotenv").config();
 const apiKey = process.env.APIkey;
-const PORT = 3002;
+const PORT = process.env.PORT || 3002
 
 server.use(express.json());
 server.use(cors());
