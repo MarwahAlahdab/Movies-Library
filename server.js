@@ -181,7 +181,7 @@ function MovieApi(id, title, release_date, poster_path, overview) {
 
 const pg = require("pg");
 // const connectionString = process.env.DATABASE_URL;
-const client = new pg.Client("postgresql://localhost:5432/movies");
+const client = new pg.Client(process.env.DATABASE_URL);
 
 function getMovie(req, res) {
   const sql = "SELECT * FROM movie";
